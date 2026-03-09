@@ -143,6 +143,12 @@ html,body{height:100%;overflow:hidden;font-family:'Lato',sans-serif;background:v
 .akf:hover{filter:brightness(1.1)}
 .akf.sel-kf{outline:2px solid #fff;outline-offset:1px}
 .akf-rz{position:absolute;right:0;top:0;bottom:0;width:7px;cursor:ew-resize;background:rgba(0,0,0,.3);border-radius:0 4px 4px 0;flex-shrink:0}
+/* Position keyframe dots */
+.pkf{position:absolute;width:14px;height:14px;top:9px;border-radius:50%;cursor:pointer;z-index:4;transform:translateX(-7px);border:2px solid rgba(0,0,0,.4);box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.pkf:hover{transform:translateX(-7px) scale(1.25)}
+.pkf.sel-kf{outline:2px solid #fff;outline-offset:2px}
+/* Path line between pos dots */
+.pkf-line{position:absolute;height:2px;top:15px;pointer-events:none;z-index:1;opacity:.5;border-radius:2px}
 #playhead{position:absolute;top:0;bottom:0;width:2px;background:var(--acc3);pointer-events:none;z-index:10}
 #playhead::before{content:'▼';position:absolute;top:-1px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--acc3)}
 
@@ -273,7 +279,7 @@ select.ri option,select.ki-inp option{background:var(--s2)}
           <button class="atb green" id="play-btn" onclick="togglePlay()">▶ Play</button>
           <button class="atb" onclick="stopAnim()">■ Stop</button>
           <span id="anim-time-lbl">0.0s</span>
-          <button class="atb yellow" onclick="addKfDialog()">+ Keyframe</button>
+          <button class="atb yellow" onclick="addKfDialog()">◆ Pos Key</button>
           <button id="anim-toggle" onclick="toggleAnimPanel()">▾ Hide</button>
         </div>
         <div id="anim-body">
@@ -317,7 +323,7 @@ select.ri option,select.ki-inp option{background:var(--s2)}
         <div class="rp-lbl">Element Properties</div>
         <div id="el-props-body"></div>
       </div>
-      <div class="hint">💡 Drag to move · Corner to resize · Dbl-click text · Del key · Ctrl+scroll = zoom · Drag panel edges to resize</div>
+      <div class="hint">💡 Drag to move · Corner to resize · Dbl-click text · Del key · Ctrl+scroll = zoom · Drag panel edges to resize · Select element + click ◆ Pos Key to add a motion keyframe</div>
     </div>
   </div>
 </div>
@@ -366,7 +372,7 @@ const BGMAP={
 };
 const BGTYPES=Object.keys(BGMAP).map(id=>({id,s:BGMAP[id]}));
 const KF_COLORS=['#ffdd57','#57c8ff','#ff6b6b','#57ffb8','#c8a0ff','#ff9f57','#ff57c8','#57ffd4'];
-const KF_TYPES=['fadeIn','fadeOut','slideLeft','slideRight','slideUp','slideDown','zoomIn','zoomOut','spin','bounce','position','opacity','scale','colorChange'];
+const KF_TYPES=['fadeIn','fadeOut','slideLeft','slideRight','slideUp','slideDown','zoomIn','zoomOut','spin','bounce','posKey','opacity','scale','colorChange'];
 const EASINGS=['linear','easeIn','easeOut','easeInOut','elastic','bouncyLand'];
 
 // ═══════════════════════════════════════════════
@@ -531,7 +537,7 @@ function mkElDom(el,idx,interactive){
   // Check if this element is the target of the selected position keyframe
   const isPosKfTarget = interactive && selKfId && (() => {
     const a=slides[ci]?.animations?.find(x=>x.id===selKfId);
-    return a?.type==='position' && a.elId===el.id;
+    return a?.type==='posKey' && a.elId===el.id;
   })();
 
   d.className='el'+(interactive?' mv':'')+(interactive&&selEl===idx?' sel':'')+(isPosKfTarget?' pos-kf-target':'');
@@ -598,12 +604,12 @@ function attachDrag(dom,idx){
     let moved=false;
     draggingElIdx=idx;
 
-    // Check if we have an active position keyframe for this element
-    const posKf = selKfId ? slides[ci].animations?.find(a=>a.id===selKfId && a.type==='position' && a.elId===slides[ci].elements[idx].id) : null;
+    // Check if we have an active posKey keyframe for this element
+    const posKf = selKfId ? slides[ci].animations?.find(a=>a.id===selKfId && a.type==='posKey' && a.elId===slides[ci].elements[idx].id) : null;
 
-    // If position KF is active, snapshot toX/toY too
-    const toOx = posKf ? (posKf.toX ?? ox) : null;
-    const toOy = posKf ? (posKf.toY ?? oy) : null;
+    // If posKey dot is active, snapshot its x/y too
+    const toOx = posKf ? (posKf.x ?? ox) : null;
+    const toOy = posKf ? (posKf.y ?? oy) : null;
 
     function mm(e2){
       moved=true;
@@ -611,18 +617,18 @@ function attachDrag(dom,idx){
       const ny=Math.round(oy+(e2.clientY-sy)/zoom);
 
       if(posKf){
-        // Position KF mode: move toX/toY only, keep base position fixed
+        // posKey mode: move the dot's x/y, keep base position fixed
         const dX = e2.clientX-sx, dY = e2.clientY-sy;
-        posKf.toX = Math.round(toOx + dX/zoom);
-        posKf.toY = Math.round(toOy + dY/zoom);
-        // Show element at the destination while dragging
-        dom.style.left = posKf.toX+'px';
-        dom.style.top  = posKf.toY+'px';
+        posKf.x = Math.round(toOx + dX/zoom);
+        posKf.y = Math.round(toOy + dY/zoom);
+        // Show element at the dot's new position while dragging
+        dom.style.left = posKf.x+'px';
+        dom.style.top  = posKf.y+'px';
         // Update inspector inputs live
-        const txInp=document.querySelector('#kf-ins-body .pos-tox');
-        const tyInp=document.querySelector('#kf-ins-body .pos-toy');
-        if(txInp)txInp.value=posKf.toX;
-        if(tyInp)tyInp.value=posKf.toY;
+        const xInp=document.querySelector('#kf-ins-body input[data-k="x"]');
+        const yInp=document.querySelector('#kf-ins-body input[data-k="y"]');
+        if(xInp)xInp.value=posKf.x;
+        if(yInp)yInp.value=posKf.y;
       } else {
         // Normal move: update the element's base position
         slides[ci].elements[idx].x=nx;
@@ -827,7 +833,33 @@ function renderAnim(){
     lr.onclick=()=>selElFn(i);ll.appendChild(lr);
 
     const tr=document.createElement('div');tr.className='at-row';
-    anims.filter(a=>a.elId===el.id).forEach(a=>{
+
+    // Separate posKey dots from regular keyframes
+    const elAnims=anims.filter(a=>a.elId===el.id);
+    const posKeys=elAnims.filter(a=>a.type==='posKey').sort((a,b)=>a.t-b.t);
+    const otherKfs=elAnims.filter(a=>a.type!=='posKey');
+
+    // Draw connecting lines between consecutive posKey dots
+    for(let k=0;k<posKeys.length-1;k++){
+      const a=posKeys[k],b=posKeys[k+1];
+      const line=document.createElement('div');line.className='pkf-line';
+      line.style.cssText=`left:${a.t*PPS}px;width:${(b.t-a.t)*PPS}px;background:${col};`;
+      tr.appendChild(line);
+    }
+
+    // Draw posKey dots
+    posKeys.forEach(a=>{
+      const d=document.createElement('div');
+      d.className='pkf'+(selKfId===a.id?' sel-kf':'');
+      d.style.cssText=`left:${a.t*PPS}px;background:${col};`;
+      d.title=`pos (${Math.round(a.x)}, ${Math.round(a.y)}) @ ${a.t.toFixed(1)}s`;
+      d.addEventListener('mousedown',e=>{e.stopPropagation();openKfIns(a,e)});
+      attachPosKeyDrag(d,a);
+      tr.appendChild(d);
+    });
+
+    // Draw regular keyframe blocks
+    otherKfs.forEach(a=>{
       const blk=document.createElement('div');blk.className='akf'+(selKfId===a.id?' sel-kf':'');
       blk.style.cssText=`left:${a.start*PPS}px;width:${Math.max(a.dur*PPS,24)}px;background:${col};`;
       blk.textContent=a.type;
@@ -836,6 +868,7 @@ function renderAnim(){
       const rz=document.createElement('div');rz.className='akf-rz';attachKfResize(rz,blk,a);blk.appendChild(rz);
       tr.appendChild(blk);
     });
+
     rows.appendChild(tr);
   });
 
@@ -863,7 +896,21 @@ function attachKfResize(rz,blk,anim){
   });
 }
 
-function tlDown(e){
+function attachPosKeyDrag(dot,kf){
+  dot.addEventListener('mousedown',e=>{
+    e.stopPropagation();e.preventDefault();
+    const sx=e.clientX,ot=kf.t;
+    function mm(e2){
+      kf.t=Math.max(0,Math.min(TDUR,ot+(e2.clientX-sx)/PPS));
+      dot.style.left=kf.t*PPS+'px';
+      renderAnim(); // redraw lines
+    }
+    function mu(){document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);saveNow()}
+    document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu);
+  });
+}
+
+
   const tgt=e.target;if(tgt.classList.contains('akf')||tgt.classList.contains('akf-rz'))return;
   const tl=$('anim-tl'),rect=tl.getBoundingClientRect();
   animT=Math.max(0,Math.min(TDUR,(e.clientX-rect.left+tl.scrollLeft)/PPS));
@@ -893,6 +940,7 @@ function openKfIns(anim,e){
   const numI=(k,mn,st=0.1,extraClass)=>{
     const i=document.createElement('input');i.className='ki-inp'+(extraClass?' '+extraClass:'');
     i.type='number';i.value=+(anim[k]??0).toFixed(2);i.step=st;
+    i.dataset.k=k;
     if(mn!=null)i.min=mn;
     i.addEventListener('input',()=>{anim[k]=parseFloat(i.value)||0;renderAnim();saveNow()});
     return i;
@@ -910,35 +958,24 @@ function openKfIns(anim,e){
     return i;
   };
 
-  row('Type',selI('type',KF_TYPES,()=>openKfIns(anim,null)));
-  row('Start',numI('start',0,0.1));
-  row('Duration',numI('dur',0.05,0.1));
-  row('Easing',selI('easing',EASINGS));
+  if(anim.type==='posKey'){
+    // Dot inspector: time, x, y, easing (to next dot)
+    const hint=document.createElement('div');hint.className='ki-hint';
+    hint.textContent='💡 Drag this dot on the timeline to change when. Drag the element on canvas to set position. Easing applies to segment after this dot.';
+    body.appendChild(hint);
+    row('Time',numI('t',0,0.1));
+    row('X',numI('x',null,1));
+    row('Y',numI('y',null,1));
+    row('Easing →',selI('easing',EASINGS));
+  } else {
+    row('Type',selI('type',KF_TYPES,()=>openKfIns(anim,null)));
+    row('Start',numI('start',0,0.1));
+    row('Duration',numI('dur',0.05,0.1));
+    row('Easing',selI('easing',EASINGS));
+  }
 
   const t=anim.type;
 
-  if(t==='position'){
-    // Initialize from/to from element's current position if not set
-    const elPos=slides[ci].elements.find(x=>x.id===anim.elId);
-    if(anim.fromX==null){anim.fromX=elPos?.x??0;}
-    if(anim.fromY==null){anim.fromY=elPos?.y??0;}
-    // toX/toY default to same as from so user drags to set destination
-    if(anim.toX==null){anim.toX=anim.fromX;}
-    if(anim.toY==null){anim.toY=anim.fromY;}
-
-    const hint=document.createElement('div');hint.className='ki-hint';
-    hint.textContent='💡 "From" = start position. Drag the element on canvas to set the "To" destination, or type below.';
-    body.appendChild(hint);
-
-    row('From X',numI('fromX',null,1));
-    row('From Y',numI('fromY',null,1));
-
-    // toX/toY get special class so drag can find them
-    const txInp=numI('toX',null,1,'pos-tox');
-    const tyInp=numI('toY',null,1,'pos-toy');
-    row('To X',txInp);
-    row('To Y',tyInp);
-  }
   if(t==='opacity'){if(anim.fromOp==null)anim.fromOp=0;if(anim.toOp==null)anim.toOp=1;row('From',numI('fromOp',0,0.05));row('To',numI('toOp',0,0.05))}
   if(t==='scale'){if(anim.fromSc==null)anim.fromSc=0.5;if(anim.toSc==null)anim.toSc=1;row('From',numI('fromSc',0,0.05));row('To',numI('toSc',0,0.05))}
   if(t==='colorChange'){if(!anim.fromCol)anim.fromCol='#ff0000';if(!anim.toCol)anim.toCol='#0000ff';row('From',colI('fromCol','#ff0000'));row('To',colI('toCol','#0000ff'))}
@@ -954,11 +991,12 @@ function addKfDialog(){
   if(!slides[ci]?.elements.length){alert('Add an element first!');return}
   if(!slides[ci].animations)slides[ci].animations=[];
   const el=slides[ci].elements[selEl??0];
-  // Default to 'position' since that's the most intuitive keyframe type
+  // Add a position keyframe dot at current playhead time, capturing current element position
   const a={
-    id:uid(), elId:el.id, type:'position',
-    start:Math.round(animT*10)/10, dur:1, easing:'easeInOut',
-    fromX:el.x, fromY:el.y, toX:el.x, toY:el.y
+    id:uid(), elId:el.id, type:'posKey',
+    t:Math.round(animT*10)/10,
+    x:el.x, y:el.y,
+    easing:'easeInOut'
   };
   slides[ci].animations.push(a);selKfId=a.id;
   renderAnim();
@@ -990,8 +1028,6 @@ function applyAnimState(t){
   const doms=$('sc').querySelectorAll('.el');
   slides[ci].elements.forEach((el,i)=>{
     const dom=doms[i];if(!dom)return;
-
-    // Don't fight with an active drag
     if(draggingElIdx===i)return;
 
     // Reset to base state
@@ -1003,7 +1039,42 @@ function applyAnimState(t){
     if(shp)shp.style.background='';
     dom.style.color='';
 
-    const act=anims.filter(a=>a.elId===el.id&&t>=a.start&&t<=a.start+a.dur);
+    // ── Position keyframe dot interpolation ──
+    const posKeys=anims.filter(a=>a.elId===el.id&&a.type==='posKey').sort((a,b)=>a.t-b.t);
+    if(posKeys.length>=2){
+      // Find surrounding dots
+      if(t<=posKeys[0].t){
+        // Before first dot: stay at first dot's position
+        dom.style.left=posKeys[0].x+'px';
+        dom.style.top=posKeys[0].y+'px';
+      } else if(t>=posKeys[posKeys.length-1].t){
+        // After last dot: stay at last dot's position
+        const last=posKeys[posKeys.length-1];
+        dom.style.left=last.x+'px';
+        dom.style.top=last.y+'px';
+      } else {
+        // Find the segment we're in
+        for(let k=0;k<posKeys.length-1;k++){
+          const a=posKeys[k],b=posKeys[k+1];
+          if(t>=a.t&&t<=b.t){
+            const prog=(t-a.t)/(b.t-a.t);
+            const e=easeFn(prog,a.easing||'easeInOut');
+            dom.style.left=(a.x+(b.x-a.x)*e)+'px';
+            dom.style.top=(a.y+(b.y-a.y)*e)+'px';
+            break;
+          }
+        }
+      }
+    } else if(posKeys.length===1){
+      // Only one dot: snap to it when at or past its time
+      if(t>=posKeys[0].t){
+        dom.style.left=posKeys[0].x+'px';
+        dom.style.top=posKeys[0].y+'px';
+      }
+    }
+
+    // ── Regular keyframe effects ──
+    const act=anims.filter(a=>a.elId===el.id&&a.type!=='posKey'&&t>=a.start&&t<=a.start+a.dur);
     act.forEach(a=>{
       const prog=(t-a.start)/a.dur;
       const e=easeFn(prog,a.easing||'easeInOut');
@@ -1019,17 +1090,6 @@ function applyAnimState(t){
         case'zoomOut': dom.style.transform=`scale(${1-e*(1-(a.toSc??0.2))})`; dom.style.opacity=(el.opacity??1)*(1-e); break;
         case'spin': dom.style.transform=`rotate(${e*(a.rotations||1)*360}deg)`; break;
         case'bounce':{const bh=a.bHeight||40;dom.style.transform=`translateY(${-Math.abs(Math.sin(prog*Math.PI*(a.rotations||2)))*bh*(1-prog)}px)`;break}
-        case'position':{
-          // Interpolate from stored fromX/fromY to toX/toY
-          // These are absolute canvas positions, set independently from el.x/el.y
-          const fx = a.fromX ?? el.x;
-          const fy = a.fromY ?? el.y;
-          const tx = a.toX   ?? el.x;
-          const ty = a.toY   ?? el.y;
-          dom.style.left = (fx + (tx-fx)*e) + 'px';
-          dom.style.top  = (fy + (ty-fy)*e) + 'px';
-          break;
-        }
         case'opacity': dom.style.opacity=(a.fromOp??0)+e*((a.toOp??1)-(a.fromOp??0)); break;
         case'scale': dom.style.transform=`scale(${(a.fromSc??0.5)+e*((a.toSc??1)-(a.fromSc??0.5))})`; break;
         case'colorChange':{
@@ -1095,10 +1155,6 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if($('pv').classList.contains('open'))closePresent();else closeKfIns()}
 });
 
-$('cwrap').addEventListener('wheel',e=>{
-  if(e.ctrlKey||e.metaKey){e.preventDefault();changeZoom(e.deltaY<0?0.08:-0.08)}
-},{passive:false});
-
 // ═══════════════════════════════════════════════
 //  PRESENT
 // ═══════════════════════════════════════════════
@@ -1150,6 +1206,9 @@ function loadFromURL(){
 // ═══════════════════════════════════════════════
 loadProjects();buildBgGrid();initResizers();loadFromURL();
 if(!curPId)renderHome();
+$('cwrap').addEventListener('wheel',e=>{
+  if(e.ctrlKey||e.metaKey){e.preventDefault();changeZoom(e.deltaY<0?0.08:-0.08)}
+},{passive:false});
 setInterval(saveNow,15000);
 </script>
 </body>
