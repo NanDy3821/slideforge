@@ -2,19 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>SlideForge</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Geist+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;touch-action:manipulation}
-input,textarea,[contenteditable]{-webkit-user-select:text!important;user-select:text!important;touch-action:auto}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;touch-action:none}
+input,textarea,select{-webkit-user-select:text!important;user-select:text!important;touch-action:manipulation;font-size:16px}
+[contenteditable]{-webkit-user-select:text!important;user-select:text!important;touch-action:manipulation}
+button,a{touch-action:manipulation}
+#home-body,#strip,#rp-inner,#anim-tl,#ribbon,#ed-top-row1,#ed-top-row2{touch-action:pan-x pan-y}
 :root{
   --bg:#0a0a0c;--s1:#111114;--s2:#18181c;--s3:#222228;
   --b1:#2c2c34;--b2:#3a3a44;
   --t1:#f2f2f0;--t2:#9090a0;--t3:#555560;
   --acc:#ffdd57;--acc2:#57c8ff;--acc3:#ff6b6b;--green:#57ffb8;--purple:#c8a0ff;
 }
-html,body{height:100%;overflow:hidden;font-family:'Lato',sans-serif;background:var(--bg);color:var(--t1)}
+html,body{height:100%;overflow:hidden;font-family:'Lato',sans-serif;background:var(--bg);color:var(--t1);-webkit-text-size-adjust:none;text-size-adjust:none}
 
 /* ── VIEWS ── */
 #view-home,#view-editor{position:fixed;inset:0;display:flex;flex-direction:column}
@@ -212,6 +215,7 @@ html,body{height:100%;overflow:hidden;font-family:'Lato',sans-serif;background:v
 
 /* ── RIGHT PANEL ── */
 #rp{background:var(--s1);overflow-y:auto;display:flex;flex-direction:column;min-width:150px;max-width:500px}
+#rp-inner{flex:1;overflow-y:auto;display:flex;flex-direction:column}
 .rp-s{border-bottom:1px solid var(--b1);padding:10px}
 .rp-lbl{font-family:'Geist Mono',monospace;font-size:9px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
 .rp-row{display:flex;align-items:center;gap:5px;margin-bottom:5px}
@@ -275,10 +279,173 @@ html,body{height:100%;overflow:hidden;font-family:'Lato',sans-serif;background:v
 .ctx-sep{height:1px;background:var(--b1);margin:3px 0}
 .ctx-item.danger{color:var(--acc3)}
 
+/* ── CUSTOM CONFIRM DIALOG ── */
+#confirm-dialog{
+  position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;transition:opacity .15s;
+}
+#confirm-dialog.open{opacity:1;pointer-events:all}
+#confirm-box{
+  background:var(--s1);border:1px solid var(--b2);border-radius:14px;
+  padding:22px 24px;max-width:320px;width:90vw;
+  box-shadow:0 16px 60px rgba(0,0,0,.7);
+  transform:scale(.95);transition:transform .15s;
+}
+#confirm-dialog.open #confirm-box{transform:scale(1)}
+#confirm-msg{font-size:14px;color:var(--t1);margin-bottom:18px;line-height:1.5;font-family:'Lato',sans-serif}
+#confirm-msg strong{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;display:block;margin-bottom:6px}
+.confirm-btns{display:flex;gap:8px;justify-content:flex-end}
+.confirm-btn{padding:8px 18px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif;transition:.15s}
+.confirm-btn.cancel{background:var(--s2);border:1px solid var(--b1);color:var(--t2)}.confirm-btn.cancel:hover{background:var(--b1)}
+.confirm-btn.danger{background:var(--acc3);color:#fff}.confirm-btn.danger:hover{background:#ff4444}
+
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--b1);border-radius:3px}
 select.ri option,select.ki-inp option{background:var(--s2)}
+
+/* ── MOBILE ── */
+@media (max-width:768px){
+  /* Home */
+  #home-nav{padding:0 14px;gap:8px}
+  #home-body{padding:20px 14px}
+  #home-hero{padding:30px 0 24px}
+  #proj-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+  .hn-btn:not(.cta){display:none}
+
+  /* Editor top bar — compact */
+  #ed-top-row1{height:44px;padding:0 8px;gap:4px;overflow-x:auto}
+  #ed-title{min-width:80px;font-size:12px}
+  #ed-top-row2{height:36px;overflow-x:auto;gap:0}
+  .rtab{padding:4px 9px;font-size:10px}
+
+  /* Ribbon — scrollable horizontal, smaller */
+  #ribbon{height:60px;padding:0 4px}
+  .rbtn{min-width:34px;height:46px}
+  .rbtn .ico{font-size:15px}
+  .rbtn .lbl{font-size:7px}
+
+  /* Editor body — stack vertically */
+  #ed-body{flex-direction:column}
+
+  /* Canvas zone needs padding for mobile toolbar and panel handle */
+  #czone{padding-bottom:50px}
+
+  /* Strip becomes horizontal bar at top */
+  #strip{
+    width:100%!important;max-width:100%!important;
+    min-width:0!important;
+    height:80px;flex-shrink:0;
+    flex-direction:row;
+    border-right:none;border-bottom:1px solid var(--b1);
+    overflow-x:auto;overflow-y:hidden;
+  }
+  #strip-head{display:none}
+  #strip-list{flex-direction:row;padding:6px;gap:6px;align-items:center}
+  .sth{aspect-ratio:unset;width:110px;height:62px;flex-shrink:0;display:block}
+  .sth-i{width:960px;height:540px;transform-origin:top left;position:absolute;top:0;left:0}
+
+  /* Resize dividers hidden on mobile */
+  .resize-divider,.resize-divider-h{display:none}
+
+  /* Canvas zone takes remaining space */
+  #czone{flex:1;min-height:0}
+  #cwrap{flex:1}
+
+  /* Animation panel — collapsed by default on mobile */
+  #anim-panel{height:34px!important}
+  #anim-hd{overflow-x:auto;gap:5px}
+  #anim-title-lbl{display:none}
+
+  /* Right panel — drawer sliding up from bottom */
+  #rp{
+    position:fixed;bottom:0;left:0;right:0;
+    width:100%!important;max-width:100%!important;
+    min-width:0!important;
+    max-height:55vh;
+    border-left:none;border-top:1px solid var(--b2);
+    border-radius:16px 16px 0 0;
+    z-index:15;
+    transform:translateY(calc(100% - 44px));
+    transition:transform .3s cubic-bezier(.32,.72,0,1);
+    box-shadow:0 -8px 40px rgba(0,0,0,.6);
+    overflow:hidden;
+  }
+  #rp-inner{overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #rp.mob-open{transform:translateY(0)}
+  #rp-handle{display:flex!important}
+
+  /* Zoom bar — tiny, bottom-right, fit button only */
+  #zoom-bar{
+    bottom:58px;right:10px;left:auto;transform:none;
+    padding:4px;gap:0;border-radius:8px;
+  }
+  #zoom-bar .zb:not(.fit-btn){display:none}
+  #zoom-val{display:none}
+  .fit-btn{width:32px!important;height:32px!important;font-size:14px!important}
+
+  /* Element handles bigger for touch */
+  .el-rz{width:14px!important;height:14px!important}
+  .el-rz.nw{top:-7px!important;left:-7px!important}
+  .el-rz.n{top:-7px!important;left:calc(50% - 7px)!important}
+  .el-rz.ne{top:-7px!important;right:-7px!important}
+  .el-rz.e{top:calc(50% - 7px)!important;right:-7px!important}
+  .el-rz.se{bottom:-7px!important;right:-7px!important}
+  .el-rz.s{bottom:-7px!important;left:calc(50% - 7px)!important}
+  .el-rz.sw{bottom:-7px!important;left:-7px!important}
+  .el-rz.w{top:calc(50% - 7px)!important;left:-7px!important}
+  .el-rot{top:-52px!important;width:18px!important;height:18px!important}
+  .el-bar button{font-size:11px!important;padding:3px 7px!important}
+
+  /* Mobile bottom toolbar */
+  #mob-toolbar{display:flex!important}
+
+  /* Always show delete on mobile */
+  .pc-del{display:flex!important}
+  .sth-del{display:flex!important}
+
+  /* Bottom padding for mobile toolbar */
+  #view-editor{padding-bottom:50px}
+
+  /* KF inspector full-width on mobile */
+  #kf-ins{left:8px!important;right:8px!important;width:auto!important}
+
+  /* Modals full-screen on mobile */
+  .modal{width:94vw;padding:18px}
+
+  /* Context menu */
+  #ctx-menu{left:8px!important;right:8px!important;width:auto;min-width:unset}
+
+  /* Prevent iOS text scaling */
+  .el-txt{-webkit-text-size-adjust:none;text-size-adjust:none}
+}
+
+/* Right panel handle (mobile only) */
+#rp-handle{
+  display:none;height:44px;align-items:center;justify-content:space-between;
+  padding:0 14px;cursor:pointer;flex-shrink:0;border-bottom:1px solid var(--b1);
+  background:var(--s1);border-radius:16px 16px 0 0;
+}
+#rp-handle-pill{width:36px;height:4px;background:var(--b2);border-radius:2px;position:absolute;left:50%;transform:translateX(-50%);top:8px}
+#rp-handle-lbl{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;color:var(--t2)}
+#rp-handle-arrow{font-size:16px;color:var(--t3);transition:transform .3s}
+#rp.mob-open #rp-handle-arrow{transform:rotate(180deg)}
+
+/* Mobile bottom toolbar */
+#mob-toolbar{
+  display:none;position:fixed;bottom:0;left:0;right:0;height:50px;
+  background:var(--s1);border-top:1px solid var(--b1);
+  z-index:15;align-items:center;justify-content:space-around;padding:0 8px;
+}
+.mtb{background:none;border:none;color:var(--t2);font-size:20px;width:44px;height:44px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.mtb:active{background:var(--s2)}
+.mtb span{font-size:9px;color:var(--t3)}
+/* Hide editor-only fixed elements when home is active */
+#view-home:not(.hidden)~* #mob-toolbar,
+body.at-home #mob-toolbar,
+body.at-home #rp{display:none!important;pointer-events:none!important}
+
 </style>
 </head>
 <body>
@@ -410,7 +577,7 @@ select.ri option,select.ki-inp option{background:var(--s2)}
           <button class="zb" onclick="changeZoom(-0.1)">−</button>
           <span id="zoom-val" onclick="resetZoom()">100%</span>
           <button class="zb" onclick="changeZoom(0.1)">+</button>
-          <button class="zb" onclick="fitZoom()" style="font-size:11px">⊡</button>
+          <button class="zb fit-btn" onclick="fitZoom()" style="font-size:11px">⊡</button>
         </div>
       </div>
       <div class="resize-divider-h" id="div-anim"></div>
@@ -449,6 +616,12 @@ select.ri option,select.ki-inp option{background:var(--s2)}
     <div class="resize-divider" id="div-right"></div>
     <!-- RIGHT PANEL -->
     <div id="rp" style="width:234px">
+      <div id="rp-handle" onclick="toggleMobPanel()">
+        <div id="rp-handle-pill"></div>
+        <span id="rp-handle-lbl">Properties & Insert</span>
+        <span id="rp-handle-arrow">▲</span>
+      </div>
+      <div id="rp-inner">
       <div class="rp-s">
         <div class="rp-lbl">Background</div>
         <div class="bg-sw-grid" id="bg-sw-grid"></div>
@@ -480,7 +653,8 @@ select.ri option,select.ki-inp option{background:var(--s2)}
         <div class="rp-lbl">Properties</div>
         <div id="el-props-body"></div>
       </div>
-      <div class="hint" id="hint-area">💡 Select an element to edit · Double-click text · Right-click for options · Ctrl+D duplicate · Ctrl+G group</div>
+      <div class="hint" id="hint-area">💡 Select an element to edit · Double-click text · Right-click for options · Ctrl+D duplicate</div>
+      </div><!-- /rp-inner -->
     </div>
   </div>
 </div>
@@ -536,6 +710,27 @@ select.ri option,select.ki-inp option{background:var(--s2)}
   <div class="ctx-sep"></div>
   <button class="ctx-item" onclick="lockEl()">🔒 Lock/Unlock</button>
   <button class="ctx-item danger" onclick="deleteEl(selEl)">✕ Delete</button>
+</div>
+
+<!-- Mobile bottom toolbar -->
+<div id="mob-toolbar">
+  <button class="mtb" onclick="addSlide()"><span>➕</span><span>Slide</span></button>
+  <button class="mtb" onclick="undoA()"><span>↩</span><span>Undo</span></button>
+  <button class="mtb" onclick="redoA()"><span>↪</span><span>Redo</span></button>
+  <button class="mtb" onclick="toggleMobPanel()"><span>⚙️</span><span>Panel</span></button>
+  <button class="mtb" onclick="openPresent()"><span>▶</span><span>Present</span></button>
+  <button class="mtb" onclick="openShare()"><span>⬆</span><span>Share</span></button>
+</div>
+
+<!-- Custom Confirm Dialog -->
+<div id="confirm-dialog">
+  <div id="confirm-box">
+    <div id="confirm-msg"><strong id="confirm-title">Delete?</strong><span id="confirm-body">This cannot be undone.</span></div>
+    <div class="confirm-btns">
+      <button class="confirm-btn cancel" onclick="confirmResolve(false)">Cancel</button>
+      <button class="confirm-btn danger" id="confirm-ok-btn" onclick="confirmResolve(true)">Delete</button>
+    </div>
+  </div>
 </div>
 
 <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
@@ -779,11 +974,12 @@ function openProject(id){
   ci=0;selEl=null;selKfId=null;undoStack=[];redoStack=[];multiSel=[];
   $('ed-title').value=p.title;
   $('view-home').classList.add('hidden');
+  document.body.classList.remove('at-home');
   switchTab('home');
   renderAll();fitZoom();
 }
-function goHome(){saveNow();$('view-home').classList.remove('hidden');renderHome()}
-function delProject(id,e){e.stopPropagation();if(!confirm('Delete this presentation?'))return;projects=projects.filter(p=>p.id!==id);saveProjects();renderHome()}
+function goHome(){saveNow();$('view-home').classList.remove('hidden');document.body.classList.add('at-home');renderHome()}
+function delProject(id,e){e.stopPropagation();showConfirm('Delete presentation?','This cannot be undone.').then(ok=>{if(!ok)return;projects=projects.filter(p=>p.id!==id);saveProjects();renderHome()})}
 function renderHome(){
   const g=$('proj-grid');g.innerHTML='';
   const nc=document.createElement('button');nc.className='pc pc-new';nc.onclick=newProject;
@@ -861,18 +1057,24 @@ function renderAll(){renderStrip();renderCanvas();updateBgSw();updateProps();ren
 
 function renderStrip(){
   const list=$('strip-list');list.innerHTML='';
-  const tw=$('strip').clientWidth-14;
+  const mob=isMobile();
+  // On mobile strip is horizontal: each thumb is 110x62px
+  // On desktop strip is vertical: width-based scaling
+  const thumbW=mob?110:($('strip').clientWidth-14);
+  const thumbH=mob?62:null;
+  const sc=mob?(thumbH/SH):(thumbW/SW);
   slides.forEach((s,i)=>{
-    const d=document.createElement('button');d.className='sth'+(i===ci?' active':'');d.style.cssText='width:100%;background:none;padding:0;';d.onclick=()=>selSlide(i);
-    const inner=document.createElement('div');inner.className='sth-i';inner.style.transform=`scale(${tw/SW})`;
+    const d=document.createElement('button');
+    d.className='sth'+(i===ci?' active':'');
+    d.style.cssText=mob?`width:110px;height:62px;background:none;padding:0;flex-shrink:0;`:`width:100%;background:none;padding:0;`;
+    d.onclick=()=>selSlide(i);
+    const inner=document.createElement('div');inner.className='sth-i';inner.style.transform=`scale(${sc})`;
     renderSlideInto(s,inner,false);
     const n=document.createElement('div');n.className='sth-n';n.textContent=i+1;
     const del=document.createElement('button');del.className='sth-del';del.textContent='×';
     del.onclick=e=>{e.stopPropagation();delSlide(i)};
     d.appendChild(inner);d.appendChild(n);d.appendChild(del);list.appendChild(d);
-    // drag to reorder
-    d.addEventListener('dragstart',()=>d._dragIdx=i);
-    d.draggable=true;
+    d.addEventListener('dragstart',()=>d._dragIdx=i);d.draggable=true;
   });
 }
 
@@ -880,6 +1082,8 @@ function renderCanvas(){
   const cv=$('sc');cv.innerHTML='<div id="cv-grid"'+(showGrid?' class="show"':'')+'></div>';
   if(!slides[ci])return;
   applyBg(cv,slides[ci]);
+  // Re-apply zoom transform — applyBg wipes inline styles via removeAttribute
+  cv.style.transform=`scale(${zoom})`;cv.style.transformOrigin='top left';
   slides[ci].elements.forEach((el,i)=>cv.appendChild(mkElDom(el,i,true)));
 }
 
@@ -889,9 +1093,24 @@ function renderSlideInto(slide,container,interactive){
 }
 
 function applyBg(el,slide){
-  el.removeAttribute('style');
-  const st=slide.customBg?`background:${slide.customBg}`:(BGMAP[slide.bg]||'background:#fff');
-  el.setAttribute('style',st+`;width:${SW}px;height:${SH}px;position:relative;overflow:hidden;`);
+  // Set background individually so we don't wipe other inline styles (zoom transform, etc.)
+  if(slide.customBg){
+    // customBg can be a color or a url(...) string
+    if(slide.customBg.startsWith('url(')){
+      el.style.background=slide.customBg;
+      el.style.backgroundSize='cover';
+      el.style.backgroundPosition='center';
+    } else {
+      el.style.background=slide.customBg;
+    }
+  } else {
+    const bg=BGMAP[slide.bg]||'background:#fff';
+    // BGMAP values are full CSS like "background:#fff" or "background:linear-gradient(...)"
+    const val=bg.replace(/^background:/,'');
+    el.style.background=val;
+  }
+  el.style.width=SW+'px';el.style.height=SH+'px';
+  el.style.position='relative';el.style.overflow='hidden';
 }
 
 // ═══════════════════════════════════════════════
@@ -930,6 +1149,12 @@ function mkElDom(el,idx,interactive){
     d.appendChild(rot_l);d.appendChild(rot_h);
     attachDrag(d,idx);
     d.addEventListener('mousedown',e=>{e.stopPropagation();selElFn(idx,e)});
+    d.addEventListener('touchstart',e=>{
+      e.stopPropagation(); // prevent cvBgTouch from firing
+      // Just update state, never re-render here — re-render happens in attachDrag's touchend
+      selEl=idx;multiSel=[];
+      updateProps();
+    },{passive:true});
   }
   d.appendChild(mkContent(el,idx,interactive));
   return d;
@@ -943,7 +1168,16 @@ function mkContent(el,idx,interactive){
     if(el.type==='quote')extra='border-left:4px solid currentColor;padding-left:12px;font-style:italic;';
     p.style.cssText=`font-size:${el.fontSize||16}px;color:${el.color||'#111'};font-family:${el.fontFamily||'Lato,sans-serif'};font-weight:${el.fontWeight||'normal'};font-style:${el.fontStyle||'normal'};text-decoration:${el.textDecoration||'none'};text-align:${el.align||'left'};line-height:${el.lineHeight||1.4};letter-spacing:${el.letterSpacing||0}px;padding:3px;${extra}`;
     p.textContent=el.text||'';
-    if(interactive)p.addEventListener('dblclick',e=>{e.stopPropagation();editText(p,idx)});
+    if(interactive){
+      p.addEventListener('dblclick',e=>{e.stopPropagation();editText(p,idx)});
+      // Double-tap for mobile
+      let _tapT=0;
+      p.addEventListener('touchend',e=>{
+        const now=Date.now();
+        if(now-_tapT<300){e.preventDefault();e.stopPropagation();editText(p,idx);}
+        _tapT=now;
+      },{passive:false});
+    }
     return p;
   }
   if(el.type==='rect'||el.type==='roundrect'){
@@ -1022,10 +1256,12 @@ function mkContent(el,idx,interactive){
 }
 
 function editText(el,idx){
-  el.contentEditable='true';el.focus();
-  const s=window.getSelection();if(s)s.selectAllChildren(el);
+  el.contentEditable='true';
+  el.style.fontSize='16px'; // prevent iOS zoom on focus (iOS zooms if focused el < 16px)
+  setTimeout(()=>{el.focus();const s=window.getSelection();if(s)s.selectAllChildren(el);},16);
   const onBlur=()=>{
     el.contentEditable='false';
+    el.style.fontSize=''; // restore — CSS from el data will re-apply on next renderCanvas
     if(el.tagName==='DIV')slides[ci].elements[idx].text=el.textContent;
     updateProps();renderStrip();saveNow();
   };
@@ -1037,24 +1273,19 @@ function editText(el,idx){
 //  DRAG
 // ═══════════════════════════════════════════════
 function attachDrag(dom,idx){
-  dom.addEventListener('mousedown',e=>{
-    if(e.target.closest('.el-bar')||e.target.closest('.el-rz')||e.target.closest('.el-rot'))return;
-    e.preventDefault();
-    const sx=e.clientX,sy=e.clientY;
+  function startDrag(cx,cy){
     const ox=slides[ci].elements[idx].x,oy=slides[ci].elements[idx].y;
     let moved=false;draggingElIdx=idx;
-    // Check active dot kf
     const dotKf=selKfId?slides[ci].animations?.find(a=>a.id===selKfId&&DOT_KF_TYPES.includes(a.type)&&a.elId===slides[ci].elements[idx].id):null;
     const dkfOx=dotKf?dotKf.x??ox:null,dkfOy=dotKf?dotKf.y??oy:null;
-    function mm(e2){
+    function move(ex,ey){
       moved=true;
-      const nx=Math.round(ox+(e2.clientX-sx)/zoom);
-      const ny=Math.round(oy+(e2.clientY-sy)/zoom);
+      const nx=Math.round(ox+(ex-cx)/zoom),ny=Math.round(oy+(ey-cy)/zoom);
       if(dotKf&&dotKf.type==='posKey'){
-        dotKf.x=Math.round(dkfOx+(e2.clientX-sx)/zoom);
-        dotKf.y=Math.round(dkfOy+(e2.clientY-sy)/zoom);
+        dotKf.x=Math.round(dkfOx+(ex-cx)/zoom);dotKf.y=Math.round(dkfOy+(ey-cy)/zoom);
         dom.style.left=dotKf.x+'px';dom.style.top=dotKf.y+'px';
-        const xi=$('#kf-ins-body input[data-k="x"]');const yi=$('#kf-ins-body input[data-k="y"]');
+        const xi=document.querySelector('#kf-ins-body input[data-k="x"]');
+        const yi=document.querySelector('#kf-ins-body input[data-k="y"]');
         if(xi)xi.value=dotKf.x;if(yi)yi.value=dotKf.y;
       } else {
         slides[ci].elements[idx].x=nx;slides[ci].elements[idx].y=ny;
@@ -1062,13 +1293,35 @@ function attachDrag(dom,idx){
         showGuides(idx);
       }
     }
-    function mu(){
+    function end(){
       draggingElIdx=null;clearGuides();
-      document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);
-      if(moved){renderStrip();saveNow();pushUndo()}
+      if(moved){renderStrip();saveNow();pushUndo();}
+      // On touch: don't re-render whole canvas (causes jump/flash).
+      // Just ensure the element has its selection class.
+      if(_isTouchDevice){
+        // Re-apply selection class to this dom node without rebuilding canvas
+        dom.classList.add('sel');
+      } else {
+        renderCanvas();updateProps();renderAnim();
+      }
     }
+    // Mouse
+    function mm(e){move(e.clientX,e.clientY)}
+    function mu(){document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);end()}
     document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu);
+    // Touch
+    function tm(e){e.preventDefault();const t=e.touches[0];move(t.clientX,t.clientY)}
+    function tu(e){e.stopPropagation();dom.removeEventListener('touchmove',tm);dom.removeEventListener('touchend',tu);end()}
+    dom.addEventListener('touchmove',tm,{passive:false});dom.addEventListener('touchend',tu);
+  }
+  dom.addEventListener('mousedown',e=>{
+    if(e.target.closest('.el-bar')||e.target.closest('.el-rz')||e.target.closest('.el-rot'))return;
+    e.preventDefault();startDrag(e.clientX,e.clientY);
   });
+  dom.addEventListener('touchstart',e=>{
+    if(e.target.closest('.el-bar')||e.target.closest('.el-rz')||e.target.closest('.el-rot'))return;
+    e.stopPropagation();e.preventDefault();const t=e.touches[0];startDrag(t.clientX,t.clientY);
+  },{passive:false});
 }
 function $s(sel){return document.querySelector(sel)}
 
@@ -1089,13 +1342,11 @@ function clearGuides(){$('sc').querySelectorAll('.guide').forEach(g=>g.remove())
 //  RESIZE (8 handles)
 // ═══════════════════════════════════════════════
 function attachResize(handle,dom,idx,dir){
-  handle.addEventListener('mousedown',e=>{
-    e.stopPropagation();e.preventDefault();
-    const sx=e.clientX,sy=e.clientY;
+  function startResize(cx,cy){
     const el=slides[ci].elements[idx];
     const ox=el.x,oy=el.y,ow=el.w,oh=el.h;
-    function mm(e2){
-      const dx=(e2.clientX-sx)/zoom,dy=(e2.clientY-sy)/zoom;
+    function move(ex,ey){
+      const dx=(ex-cx)/zoom,dy=(ey-cy)/zoom;
       let nx=ox,ny=oy,nw=ow,nh=oh;
       if(dir.includes('e'))nw=Math.max(20,ow+dx);
       if(dir.includes('s'))nh=Math.max(12,oh+dy);
@@ -1104,9 +1355,15 @@ function attachResize(handle,dom,idx,dir){
       el.x=Math.round(nx);el.y=Math.round(ny);el.w=Math.round(nw);el.h=Math.round(nh);
       dom.style.left=el.x+'px';dom.style.top=el.y+'px';dom.style.width=el.w+'px';dom.style.height=el.h+'px';
     }
+    function mm(e){move(e.clientX,e.clientY)}
     function mu(){document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);renderAll()}
     document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu);
-  });
+    function tm(e){e.preventDefault();const t=e.touches[0];move(t.clientX,t.clientY)}
+    function tu(){handle.removeEventListener('touchmove',tm);handle.removeEventListener('touchend',tu);renderAll()}
+    handle.addEventListener('touchmove',tm,{passive:false});handle.addEventListener('touchend',tu);
+  }
+  handle.addEventListener('mousedown',e=>{e.stopPropagation();e.preventDefault();startResize(e.clientX,e.clientY)});
+  handle.addEventListener('touchstart',e=>{e.stopPropagation();e.preventDefault();const t=e.touches[0];startResize(t.clientX,t.clientY)},{passive:false});
 }
 
 // ═══════════════════════════════════════════════
@@ -1159,10 +1416,14 @@ function selElFn(idx,e){
     if(multiSel.includes(idx))multiSel=multiSel.filter(i=>i!==idx);
     else multiSel.push(idx);
     selEl=idx;
+    renderCanvas();updateProps();renderAnim();
   } else {
+    const alreadySel=selEl===idx&&multiSel.length===0;
     selEl=idx;multiSel=[];
+    // Don't re-render canvas if this element was already selected — avoids mid-drag DOM reset
+    if(!alreadySel){renderCanvas();updateProps();renderAnim();}
+    else{updateProps();}
   }
-  renderCanvas();updateProps();renderAnim();
 }
 function deleteEl(idx){
   if(idx===null||idx===undefined)return;
@@ -1196,7 +1457,43 @@ function groupSelected(){
   // Simple grouping: just note it visually (true group logic is complex)
   alert('Group: select multiple elements with Shift+click, then use align tools.');
 }
-function cvBgDown(e){if(e.target===$('sc')||e.target===$('cv-grid')){selEl=null;multiSel=[];renderCanvas();updateProps();closeCtxMenu()}}
+// ═══════════════════════════════════════════════
+//  TOUCH vs MOUSE: prevent synthetic mouse events
+// ═══════════════════════════════════════════════
+let _isTouchDevice=false;
+let _dragging=false;
+
+// Once any touch happens, mark as touch device and ignore all mouse events
+document.addEventListener('touchstart',()=>{_isTouchDevice=true},{passive:true,once:true});
+
+// Global: prevent ALL multi-touch zoom (iOS ignores user-scalable=no since iOS 10)
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+
+// Prevent double-tap zoom on canvas
+let _lastTap=0;
+$('cwrap').addEventListener('touchend',e=>{
+  const now=Date.now();
+  if(now-_lastTap<300)e.preventDefault();
+  _lastTap=now;
+},{passive:false});
+
+// Canvas background: deselect when touching empty canvas area
+$('sc').addEventListener('touchstart',e=>{
+  // Only deselect if touching the bg directly AND not in a drag
+  if(draggingElIdx!==null)return;
+  if(e.target===$('sc')||e.target.id==='cv-grid'){
+    e.stopPropagation();
+    selEl=null;multiSel=[];renderCanvas();updateProps();closeCtxMenu();
+  }
+},{passive:true});
+
+function cvBgDown(e){
+  // On touch devices, ignore ALL mouse events (they are synthetic)
+  if(_isTouchDevice)return;
+  if(e.target===$('sc')||e.target.id==='cv-grid'){
+    selEl=null;multiSel=[];renderCanvas();updateProps();closeCtxMenu();
+  }
+}
 function cvCtxMenu(e){
   e.preventDefault();
   const menu=$('ctx-menu');
@@ -1389,7 +1686,14 @@ function fitZoom(){
   if(aw<=0||ah<=0)return;
   zoom=Math.min(aw/SW,ah/SH,1.5);applyZoom();
 }
-window.addEventListener('resize',()=>fitZoom());
+// Only re-fit on genuine window outer size changes, not internal layout shifts (panel open/close)
+let _winW=window.outerWidth,_winH=window.outerHeight;
+window.addEventListener('resize',()=>{
+  if(window.outerWidth!==_winW||window.outerHeight!==_winH){
+    _winW=window.outerWidth;_winH=window.outerHeight;
+    fitZoom();
+  }
+});
 
 // ═══════════════════════════════════════════════
 //  ANIMATION PANEL
@@ -1701,8 +2005,26 @@ function toggleAnimPanel(){
 }
 
 // ═══════════════════════════════════════════════
-//  UNDO / REDO
+//  CUSTOM CONFIRM DIALOG
 // ═══════════════════════════════════════════════
+let _confirmResolve=null;
+function showConfirm(title,body,okLabel='Delete'){
+  return new Promise(res=>{
+    _confirmResolve=res;
+    $('confirm-title').textContent=title;
+    $('confirm-body').textContent=body;
+    $('confirm-ok-btn').textContent=okLabel;
+    $('confirm-dialog').classList.add('open');
+  });
+}
+function confirmResolve(val){
+  $('confirm-dialog').classList.remove('open');
+  if(_confirmResolve){_confirmResolve(val);_confirmResolve=null;}
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&$('confirm-dialog').classList.contains('open')){confirmResolve(false)}
+  if(e.key==='Enter'&&$('confirm-dialog').classList.contains('open')){confirmResolve(true)}
+});
 function pushUndo(){undoStack.push(JSON.stringify({slides,ci}));if(undoStack.length>80)undoStack.shift();redoStack=[]}
 function undoA(){if(!undoStack.length)return;redoStack.push(JSON.stringify({slides,ci}));const s=JSON.parse(undoStack.pop());slides=s.slides;ci=s.ci;selEl=null;selKfId=null;closeKfIns();renderAll()}
 function redoA(){if(!redoStack.length)return;undoStack.push(JSON.stringify({slides,ci}));const s=JSON.parse(redoStack.pop());slides=s.slides;ci=s.ci;selEl=null;selKfId=null;closeKfIns();renderAll()}
@@ -1789,12 +2111,80 @@ function exportPPTX(){alert('PPTX export is in beta. For now, use Export JSON to
 //  INIT
 // ═══════════════════════════════════════════════
 loadProjects();buildBgGrid();initResizers();loadFromURL();
-if(!curPId)renderHome();
+if(!curPId){renderHome();document.body.classList.add('at-home');}
 $('cwrap').addEventListener('wheel',e=>{
   if(e.ctrlKey||e.metaKey){e.preventDefault();changeZoom(e.deltaY<0?0.08:-0.08)}
 },{passive:false});
 setInterval(saveNow,15000);
 switchTab('home');
+
+// ═══════════════════════════════════════════════
+//  MOBILE SUPPORT
+// ═══════════════════════════════════════════════
+const isMobile=()=>window.innerWidth<=768;
+
+function toggleMobPanel(){
+  $('rp').classList.toggle('mob-open');
+}
+
+// Touch on timeline
+$('anim-tl').addEventListener('touchstart',e=>{
+  const t=e.touches[0];
+  const rect=$('anim-tl').getBoundingClientRect();
+  animT=Math.max(0,Math.min(TDUR,(t.clientX-rect.left+$('anim-tl').scrollLeft)/PPS));
+  $('playhead').style.left=(animT*PPS)+'px';
+  $('anim-time-lbl').textContent=animT.toFixed(1)+'s';
+  applyAnimState(animT);
+},{passive:true});
+
+// Pinch-to-zoom on canvas
+let pinchDist=null;
+$('cwrap').addEventListener('touchstart',e=>{
+  if(e.touches.length===2){pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)}
+},{passive:true});
+$('cwrap').addEventListener('touchmove',e=>{
+  if(e.touches.length===2&&pinchDist){
+    e.preventDefault();
+    const nd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    changeZoom((nd-pinchDist)*0.004);pinchDist=nd;
+  }
+},{passive:false});
+$('cwrap').addEventListener('touchend',e=>{if(e.touches.length<2)pinchDist=null},{passive:true});
+
+// Present mode swipe
+let pvTx=null;
+$('pv').addEventListener('touchstart',e=>{pvTx=e.touches[0].clientX},{passive:true});
+$('pv').addEventListener('touchend',e=>{
+  if(pvTx===null)return;
+  const dx=pvTx-e.changedTouches[0].clientX;
+  if(Math.abs(dx)>50){dx>0?pvNext():pvPrev()}
+  pvTx=null;
+},{passive:true});
+
+// Strip horizontal scroll on mobile
+$('strip').addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    const t0=e.touches[0];
+    const sx=t0.clientX,so=$('strip').scrollLeft;
+    function tm(e2){$('strip').scrollLeft=so-(e2.touches[0].clientX-sx)}
+    function tu(){$('strip').removeEventListener('touchmove',tm);$('strip').removeEventListener('touchend',tu)}
+    $('strip').addEventListener('touchmove',tm,{passive:true});$('strip').addEventListener('touchend',tu);
+  }
+},{passive:true});
+
+// Collapse anim panel on mobile by default
+if(isMobile()){
+  $('anim-panel').classList.add('col');
+  $('anim-toggle').textContent='▸ Show';
+  animOpen=false;
+}
+window.addEventListener('resize',()=>{
+  if(!isMobile()){
+    $('rp').classList.remove('mob-open');
+    $('rp').style.transform='';
+  }
+  // fitZoom is handled by the outerWidth/outerHeight listener above
+});
 </script>
 </body>
 </html>
