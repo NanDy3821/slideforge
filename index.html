@@ -6,7 +6,7 @@
 <title>SlideForge</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Geist+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 input,textarea,[contenteditable]{-webkit-user-select:text!important;user-select:text!important}
 :root{
   --bg:#0a0a0c;--s1:#111114;--s2:#18181c;--s3:#222228;
@@ -39,7 +39,7 @@ html,body{height:100%;overflow:hidden;font-family:'Lato',sans-serif;background:v
 .hbtn.p{background:var(--acc);color:#111}.hbtn.p:hover{background:#ffe033;transform:translateY(-1px)}
 .hbtn.s{background:var(--s2);color:var(--t1);border:1px solid var(--b1)}.hbtn.s:hover{background:var(--s3)}
 #proj-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-.pc{background:var(--s1);border:1px solid var(--b1);border-radius:11px;overflow:hidden;cursor:pointer;transition:.2s;position:relative}
+.pc{background:var(--s1);border:1px solid var(--b1);border-radius:11px;overflow:hidden;cursor:pointer;transition:.2s;position:relative;text-align:left;width:100%;display:block;font-family:inherit;color:inherit;padding:0}
 .pc:hover{border-color:var(--b2);transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.4)}
 .pc-th{aspect-ratio:16/9;background:var(--s2);position:relative;overflow:hidden}
 .pc-thi{width:960px;height:540px;transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none}
@@ -254,7 +254,4 @@ select.ri option,select.ki-inp option{background:var(--s2)}
   <div id="ed-body">
     <!-- SLIDE STRIP -->
     <div id="strip" style="width:168px">
-      <div id="strip-head"><span>Slides</span><button id="strip-add" onclick="addSlide()">+</button></div>
-      <div id="strip-list"></div>
-    </div>
-    <div
+      <div id="strip-head"><span>Slides</span><bu
